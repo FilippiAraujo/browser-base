@@ -1,0 +1,16 @@
+{
+  "name": "browserbase-vercel-executor",
+  "version": "1.0.0",
+  "description": "Vercel Serverless Function para executar automações no Browserbase",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@browserbasehq/stagehand": "^2.0.0"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  }
+}
