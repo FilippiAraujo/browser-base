@@ -4,13 +4,10 @@
   "description": "Vercel Serverless Function para executar automações no Browserbase",
   "type": "module",
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   },
   "dependencies": {
-    "@browserbasehq/stagehand": "^2.0.0"
-  },
-  "scripts": {
-    "dev": "vercel dev",
-    "deploy": "vercel --prod"
+    "@browserbasehq/stagehand": "^2.0.0",
+    "playwright-core": "^1.48.0"
   }
 }
