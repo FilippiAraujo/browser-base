@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    }
+  ],
+  "env": {
+    "BROWSERBASE_API_KEY": "@browserbase-api-key",
+    "BROWSERBASE_PROJECT_ID": "@browserbase-project-id",
+    "ANTHROPIC_API_KEY": "@anthropic-api-key"
+  },
+  "functions": {
+    "api/execute.js": {
+      "maxDuration": 300
+    }
+  }
+}
