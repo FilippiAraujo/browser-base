@@ -1,21 +1,11 @@
 /**
- * 🎬 Vercel Serverless Function - Browserbase Executor
- * 
- * Deploy: vercel --prod
- * Endpoint: https://seu-projeto.vercel.app/api/execute
- * 
- * POST /api/execute
- * Body: {
- *   "prompt": "Entre no Google e pesquise por IA",
- *   "url": "https://google.com"
- * }
+ * 🎬 Vercel Serverless Function - Browserbase Executor (COM DEBUG)
  */
 
 import { Stagehand } from '@browserbasehq/stagehand';
 
 export const config = {
-  maxDuration: 300, // 5 minutos (plano Pro da Vercel)
-  // Se você tiver plano Free, use: maxDuration: 10
+  maxDuration: 10,
 };
 
 export default async function handler(req, res) {
@@ -24,7 +14,6 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle OPTIONS request (preflight)
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -36,6 +25,23 @@ export default async function handler(req, res) {
     });
   }
 
+  // 🐛 DEBUG: Verificar se as variáveis existem
+  console.log('🔍 Verificando variáveis de ambiente...');
+  console.log('BROWSERBASE_API_KEY existe?', !!process.env.BROWSERBASE_API_KEY);
+  console.log('BROWSERBASE_PROJECT_ID existe?', !!process.env.BROWSERBASE_PROJECT_ID);
+  console.log('ANTHROPIC_API_KEY existe?', !!process.env.ANTHROPIC_API_KEY);
+  
+  // Mostrar primeiros caracteres (seguro)
+  if (process.env.BROWSERBASE_API_KEY) {
+    console.log('BROWSERBASE_API_KEY começa com:', process.env.BROWSERBASE_API_KEY.substring(0, 10) + '...');
+  }
+  if (process.env.BROWSERBASE_PROJECT_ID) {
+    console.log('BROWSERBASE_PROJECT_ID:', process.env.BROWSERBASE_PROJECT_ID.substring(0, 10) + '...');
+  }
+  if (process.env.ANTHROPIC_API_KEY) {
+    console.log('ANTHROPIC_API_KEY começa com:', process.env.ANTHROPIC_API_KEY.substring(0, 10) + '...');
+  }
+
   const { prompt, url } = req.body;
 
   if (!prompt) {
@@ -45,6 +51,28 @@ export default async function handler(req, res) {
         prompt: 'Entre no Google e pesquise por IA',
         url: 'https://google.com'
       }
+    });
+  }
+
+  // Verificar se as chaves estão presentes
+  if (!process.env.BROWSERBASE_API_KEY) {
+    return res.status(500).json({
+      error: 'BROWSERBASE_API_KEY não configurada',
+      message: 'Adicione a variável no dashboard da Vercel'
+    });
+  }
+
+  if (!process.env.BROWSERBASE_PROJECT_ID) {
+    return res.status(500).json({
+      error: 'BROWSERBASE_PROJECT_ID não configurada',
+      message: 'Adicione a variável no dashboard da Vercel'
+    });
+  }
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return res.status(500).json({
+      error: 'ANTHROPIC_API_KEY não configurada',
+      message: 'Adicione a variável no dashboard da Vercel'
     });
   }
 
@@ -72,6 +100,7 @@ export default async function handler(req, res) {
       enableCaching: true
     });
 
+    console.log('⏳ Inicializando Stagehand...');
     await stagehand.init();
     sessionId = stagehand.sessionId;
     console.log('✅ Sessão criada:', sessionId);
@@ -98,10 +127,7 @@ export default async function handler(req, res) {
     const agent = stagehand.agent({
       provider: 'anthropic',
       model: 'claude-sonnet-4-20250514',
-      instructions: `
-        Você é um assistente que executa tarefas no navegador.
-        Seja claro e objetivo sobre cada ação realizada.
-      `.trim(),
+      instructions: 'Você é um assistente que executa tarefas no navegador.',
       options: {
         apiKey: process.env.ANTHROPIC_API_KEY
       }
@@ -110,7 +136,7 @@ export default async function handler(req, res) {
     console.log('⚡ Executando tarefa...');
     const resultado = await agent.execute({
       instruction: prompt,
-      maxSteps: 20
+      maxSteps: 5 // Reduzido para caber no timeout de 10s
     });
 
     console.log('✅ Tarefa concluída!');
@@ -177,7 +203,9 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('❌ Erro:', error);
+    console.error('❌ Erro completo:', error);
+    console.error('❌ Stack:', error.stack);
+    console.error('❌ Message:', error.message);
 
     // Tentar fechar sessão em caso de erro
     if (stagehand) {
@@ -191,6 +219,7 @@ export default async function handler(req, res) {
     return res.status(500).json({
       sucesso: false,
       erro: error.message,
+      erroCompleto: error.stack,
       sessionId: sessionId || null,
       passos: passos.map(p => ({
         numero: p.numero,
