@@ -1,25 +1,8 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    }
-  ],
-  "env": {
-    "BROWSERBASE_API_KEY": "bb_live_fBHTDnGVaO-NeLb1iVK6BtyUbQQ",
-    "BROWSERBASE_PROJECT_ID": "852689e7-d0f3-4768-b143-c166daf07c5b",
-    "ANTHROPIC_API_KEY": "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"
-  },
   "functions": {
     "api/execute.js": {
-      "maxDuration": 300
+      "maxDuration": 10
     }
   }
 }
